@@ -16,11 +16,12 @@
 #define SERVO_FREQ_HZ   50
 #define SERVO_PERIOD_US (1000000 / SERVO_FREQ_HZ) // 20000us = 20ms
 
-// パルス幅(μs)の目安
+// 1500.0はdouble型／1500.0fはfloat型
 
+// パルス幅(μs)の目安
 //   1500μs 付近で停止, 2300μs で前進, 700μs で後退(一例)
 #define SERVO_NEUTRAL_US 1500.0f
-#define SERVO_RANGE_US    800.0f  // ±500μsを全速幅とする(例)
+#define SERVO_RANGE_US    800.0f  // ±800μsを全速幅とする(例)
 
 // PIDゲイン(要調整)
 #define PID_KP  10.0f
@@ -34,8 +35,10 @@
 #define ACCEL_LSB_2G 16384.0f
 #define GYRO_LSB_250 131.0f
 
+// 関数にstaticを付けると、その関数はそのファイル内でのみ有効になる
 static void init_pwm_for_servo(uint pin);
 static void set_servo_pulse(uint pin, float pulse_us);
+
 
 int main() {
     stdio_init_all();
@@ -147,7 +150,7 @@ int main() {
 // サーボPWM初期化
 //--------------------------------------------------
 static void init_pwm_for_servo(uint pin) {
-    gpio_set_function(pin, GPIO_FUNC_PWM);
+    gpio_set_function(pin, GPIO_FUNC_PWM); //GPIO機能を選択している，GPIO_FUNC_PWMはPWM機能を選択していることになる
 
     uint slice_num = pwm_gpio_to_slice_num(pin);
     uint channel   = pwm_gpio_to_channel(pin);
