@@ -5,9 +5,12 @@
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
 
+
 #include "mpu6050_i2c.h"      // ヘッダ
 // Madgwickフィルタヘッダは「補正演算のために」読み込んでもOKだが、
 // ここではオフセット取得だけなので必須でなければなくてもよい。
+
+#include "config.h"           // ピン設定
 
 // MPU6050のI2Cアドレス (0x68)
 static const int MPU6050_ADDR = 0x68;
@@ -16,7 +19,7 @@ static const int MPU6050_ADDR = 0x68;
 #define ACCEL_LSB_2G 16384.0f
 #define GYRO_LSB_250 131.0f
 
-#define I2C_PORT i2c1
+// #define I2C_PORT i2c1
 
 //---------------------------------------------------------------------------------
 // MPU6050 初期化/リセット

@@ -7,13 +7,14 @@
 #include "mpu6050_i2c.h"       // <-- センサー操作のヘッダ
 #include "madgwick_filter.h"
 #include "pid_controller.h"
+#include "config.h"
 
 // --- 定数定義 ---
 #define SERVO_PIN_RIGHT 26
 #define SERVO_PIN_LEFT  27
-#define I2C_PORT i2c1
-#define I2C_SCL_PIN 10
-#define I2C_SDA_PIN 11
+// #define I2C_PORT i2c1
+// #define I2C_SCL_PIN 10
+// #define I2C_SDA_PIN 11
 
 // 0SDA 4
 // 0SCL 5
@@ -39,7 +40,7 @@
 #define PID_KD   1.0f
 
 // Madgwickフィルタゲイン
-#define MADGWICK_BETA 0.05f
+#define MADGWICK_BETA 0.05f // 元々は0.05fだった
 
 // ±2g, ±250deg/sの場合
 #define ACCEL_LSB_2G 16384.0f
