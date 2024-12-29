@@ -16,26 +16,28 @@ static const int MPU6050_ADDR = 0x68;
 #define ACCEL_LSB_2G 16384.0f
 #define GYRO_LSB_250 131.0f
 
+#define I2C_PORT i2c1
+
 //---------------------------------------------------------------------------------
 // MPU6050 初期化/リセット
 //---------------------------------------------------------------------------------
 void mpu6050_reset() {
     uint8_t buf[] = {0x6B, 0x80};  // PWR_MGMT_1: デバイスリセット
-    i2c_write_blocking(i2c_default, MPU6050_ADDR, buf, 2, false);
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDR, buf, 2, false);
     sleep_ms(150);
 
     // スリープ解除
     buf[1] = 0x00;
-    i2c_write_blocking(i2c_default, MPU6050_ADDR, buf, 2, false); 
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDR, buf, 2, false); 
     sleep_ms(10);
 
     // ジャイロレンジ ±250 deg/s
     uint8_t gyro_config[2] = {0x1B, 0x00};
-    i2c_write_blocking(i2c_default, MPU6050_ADDR, gyro_config, 2, false);
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDR, gyro_config, 2, false);
 
     // 加速度レンジ ±2g
     uint8_t accel_config[2] = {0x1C, 0x00};
-    i2c_write_blocking(i2c_default, MPU6050_ADDR, accel_config, 2, false);
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDR, accel_config, 2, false);
 }
 
 //---------------------------------------------------------------------------------
@@ -46,24 +48,24 @@ void mpu6050_read_raw(int16_t accel[3], int16_t gyro[3], int16_t* temp) {
     uint8_t buffer[6];
 
     // 加速度 (0x3B~0x40)
-    i2c_write_blocking(i2c_default, MPU6050_ADDR, &reg, 1, true);
-    i2c_read_blocking(i2c_default, MPU6050_ADDR, buffer, 6, false);
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDR, &reg, 1, true);
+    i2c_read_blocking(I2C_PORT, MPU6050_ADDR, buffer, 6, false);
     for (int i = 0; i < 3; i++) {
         accel[i] = (buffer[2*i] << 8) | buffer[2*i+1];
     }
 
     // ジャイロ (0x43~0x48)
     reg = 0x43;
-    i2c_write_blocking(i2c_default, MPU6050_ADDR, &reg, 1, true);
-    i2c_read_blocking(i2c_default, MPU6050_ADDR, buffer, 6, false);
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDR, &reg, 1, true);
+    i2c_read_blocking(I2C_PORT, MPU6050_ADDR, buffer, 6, false);
     for (int i = 0; i < 3; i++) {
         gyro[i] = (buffer[2*i] << 8) | buffer[2*i+1];
     }
 
     // 温度(0x41~0x42)
     reg = 0x41;
-    i2c_write_blocking(i2c_default, MPU6050_ADDR, &reg, 1, true);
-    i2c_read_blocking(i2c_default, MPU6050_ADDR, buffer, 2, false);
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDR, &reg, 1, true);
+    i2c_read_blocking(I2C_PORT, MPU6050_ADDR, buffer, 2, false);
     *temp = (buffer[0] << 8) | buffer[1];
 }
 

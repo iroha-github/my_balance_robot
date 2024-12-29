@@ -9,8 +9,18 @@
 #include "pid_controller.h"
 
 // --- 定数定義 ---
-#define SERVO_PIN_RIGHT 14
-#define SERVO_PIN_LEFT  15
+#define SERVO_PIN_RIGHT 26
+#define SERVO_PIN_LEFT  27
+#define I2C_PORT i2c1
+#define I2C_SCL_PIN 10
+#define I2C_SDA_PIN 11
+
+// 0SDA 4
+// 0SCL 5
+// 0SDA 12
+// 0SCL 13
+// 1SDA 14
+// 1SCL 15
 
 // サーボ制御パラメータ (50Hz, 20ms周期)
 #define SERVO_FREQ_HZ   50
@@ -47,11 +57,11 @@ int main() {
     printf("倒立振子 + PID + Madgwick テスト開始\n");
 
     // I2C初期化
-    i2c_init(i2c_default, 400 * 1000);
-    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+    i2c_init(I2C_PORT, 400 * 1000);
+    gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_SDA_PIN);
+    gpio_pull_up(I2C_SCL_PIN);
 
     // 1) MPU6050リセット & キャリブレーション
     mpu6050_reset();
