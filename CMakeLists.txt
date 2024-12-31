@@ -37,6 +37,7 @@ add_executable(my_balance_robot
     src/mpu6050_i2c.c
     src/madgwick_filter.c
     src/pid_controller.c
+    src/servo.c
 )
 
 # ヘッダファイルのディレクトリ

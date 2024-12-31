@@ -7,6 +7,7 @@
 #include "mpu6050_i2c.h"       // <-- センサー操作のヘッダ
 #include "madgwick_filter.h"
 #include "pid_controller.h"
+#include "servo.h"              // <-- サーボ操作のヘッダ
 #include "config.h"
 
 // --- 定数定義 ---
@@ -23,16 +24,7 @@
 // 1SDA 14
 // 1SCL 15
 
-// サーボ制御パラメータ (50Hz, 20ms周期)
-#define SERVO_FREQ_HZ   50
-#define SERVO_PERIOD_US (1000000 / SERVO_FREQ_HZ) // 20000us = 20ms
 
-// 1500.0はdouble型／1500.0fはfloat型
-
-// パルス幅(μs)の目安
-//   1500μs 付近で停止, 2300μs で前進, 700μs で後退(一例)
-#define SERVO_NEUTRAL_US 1500.0f
-#define SERVO_RANGE_US    800.0f  // ±800μsを全速幅とする(例)
 
 // PIDゲイン(要調整)
 #define PID_KP  10.0f
@@ -47,8 +39,8 @@
 #define GYRO_LSB_250 131.0f
 
 // 関数にstaticを付けると、その関数はそのファイル内でのみ有効になる
-static void init_pwm_for_servo(uint pin);
-static void set_servo_pulse(uint pin, float pulse_us);
+// static void init_pwm_for_servo(uint pin);
+// static void set_servo_pulse(uint pin, float pulse_us);
 
 // グローバル変数としてオフセットを定義
 float accel_offset_global[3] = {0};
@@ -138,38 +130,38 @@ int main() {
     return 0;
 }
 
-//--------------------------------------------------
-// サーボPWM初期化
-//--------------------------------------------------
-static void init_pwm_for_servo(uint pin) {
-    gpio_set_function(pin, GPIO_FUNC_PWM); //GPIO機能を選択している，GPIO_FUNC_PWMはPWM機能を選択していることになる
+// //--------------------------------------------------
+// // サーボPWM初期化
+// //--------------------------------------------------
+// static void init_pwm_for_servo(uint pin) {
+//     gpio_set_function(pin, GPIO_FUNC_PWM); //GPIO機能を選択している，GPIO_FUNC_PWMはPWM機能を選択していることになる
 
-    uint slice_num = pwm_gpio_to_slice_num(pin);
-    uint channel   = pwm_gpio_to_channel(pin);
+//     uint slice_num = pwm_gpio_to_slice_num(pin);
+//     uint channel   = pwm_gpio_to_channel(pin);
 
-    pwm_config config = pwm_get_default_config();
-    // 例: wrap=24999, clkdiv=96 => 50Hz
-    pwm_config_set_clkdiv(&config, 96.0f);
-    pwm_config_set_wrap(&config, 24999);
-    pwm_init(slice_num, &config, true);
-    pwm_set_enabled(slice_num, true);
+//     pwm_config config = pwm_get_default_config();
+//     // 例: wrap=24999, clkdiv=96 => 50Hz
+//     pwm_config_set_clkdiv(&config, 96.0f);
+//     pwm_config_set_wrap(&config, 24999);
+//     pwm_init(slice_num, &config, true);
+//     pwm_set_enabled(slice_num, true);
 
-    // 初期はニュートラル
-    set_servo_pulse(pin, SERVO_NEUTRAL_US);
-}
+//     // 初期はニュートラル
+//     set_servo_pulse(pin, SERVO_NEUTRAL_US);
+// }
 
-//--------------------------------------------------
-// サーボ用パルス幅(μs)設定
-//--------------------------------------------------
-static void set_servo_pulse(uint pin, float pulse_us) {
-    if (pulse_us < 500.0f)  pulse_us = 500.0f;
-    if (pulse_us > 2500.0f) pulse_us = 2500.0f;
+// //--------------------------------------------------
+// // サーボ用パルス幅(μs)設定
+// //--------------------------------------------------
+// static void set_servo_pulse(uint pin, float pulse_us) {
+//     if (pulse_us < 500.0f)  pulse_us = 500.0f;
+//     if (pulse_us > 2500.0f) pulse_us = 2500.0f;
 
-    float duty_cycle = pulse_us / (float)SERVO_PERIOD_US; // 20ms周期での比率
-    float compare    = duty_cycle * 25000.0f;             // wrap=24999なら0~25000
+//     float duty_cycle = pulse_us / (float)SERVO_PERIOD_US; // 20ms周期での比率
+//     float compare    = duty_cycle * 25000.0f;             // wrap=24999なら0~25000
 
-    uint slice_num = pwm_gpio_to_slice_num(pin);
-    uint channel   = pwm_gpio_to_channel(pin);
+//     uint slice_num = pwm_gpio_to_slice_num(pin);
+//     uint channel   = pwm_gpio_to_channel(pin);
 
-    pwm_set_chan_level(slice_num, channel, (uint16_t)compare);
-}
+//     pwm_set_chan_level(slice_num, channel, (uint16_t)compare);
+// }
