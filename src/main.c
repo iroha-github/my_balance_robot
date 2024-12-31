@@ -50,6 +50,10 @@
 static void init_pwm_for_servo(uint pin);
 static void set_servo_pulse(uint pin, float pulse_us);
 
+// グローバル変数としてオフセットを定義
+float accel_offset_global[3] = {0};
+float gyro_offset_global[3] = {0};
+
 
 int main() {
     stdio_init_all();
@@ -68,7 +72,7 @@ int main() {
     mpu6050_reset();
     float accel_offset[3] = {0}, gyro_offset[3] = {0};
     printf("MPU6050キャリブレーション中。水平に置いて静止してください...\n");
-    mpu6050_calibrate(accel_offset, gyro_offset, 200); // サンプル数200は一例
+    mpu6050_calibrate(accel_offset_global, gyro_offset_global, 200); // サンプル数200は一例
     printf("キャリブ完了!\n");
 
     // 2) Madgwickフィルタ初期化
@@ -87,32 +91,17 @@ int main() {
     float pitch_target = 0.0f; // 直立を0度とする
 
     while (1) {
-        // (A) MPU6050 生データ取得
-        int16_t accel_raw[3], gyro_raw[3], temp_raw;
-        mpu6050_read_raw(accel_raw, gyro_raw, &temp_raw);
+        // (A) MPU6050 オフセット後のデータ取得
 
-        // オフセット補正
-        float ax_corr = (float)accel_raw[0] - accel_offset[0];
-        float ay_corr = (float)accel_raw[1] - accel_offset[1];
-        float az_corr = (float)accel_raw[2] - accel_offset[2];
-
-        float gx_corr = (float)gyro_raw[0] - gyro_offset[0];
-        float gy_corr = (float)gyro_raw[1] - gyro_offset[1];
-        float gz_corr = (float)gyro_raw[2] - gyro_offset[2];
-
-        // LSB -> [g], [deg/s]
-        float ax_g = ax_corr / ACCEL_LSB_2G;
-        float ay_g = ay_corr / ACCEL_LSB_2G;
-        float az_g = az_corr / ACCEL_LSB_2G;
-
-        float gx_dps = gx_corr / GYRO_LSB_250; 
-        float gy_dps = gy_corr / GYRO_LSB_250;
-        float gz_dps = gz_corr / GYRO_LSB_250;
-
-        // deg/s -> rad/s
-        float gx_rad = gx_dps * (float)M_PI / 180.0f;
-        float gy_rad = gy_dps * (float)M_PI / 180.0f;
-        float gz_rad = gz_dps * (float)M_PI / 180.0f;
+        float adj_accel[3], adj_gyro[3];
+        mpu6050_adjusted_values(adj_accel, adj_gyro, accel_offset_global, gyro_offset_global);
+        
+        float gx_rad = adj_gyro[0];
+        float gy_rad = adj_gyro[1];
+        float gz_rad = adj_gyro[2];
+        float ax_g = adj_accel[0];
+        float ay_g = adj_accel[1];
+        float az_g = adj_accel[2];
 
         // (B) Δt
         absolute_time_t now = get_absolute_time();
