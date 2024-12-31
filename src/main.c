@@ -13,19 +13,14 @@
 // デバッグ出力
 #define DEBUG
 
-
 // PIDゲイン(要調整)
 #define PID_KP  10.0f
 #define PID_KI   0.0f
 #define PID_KD   1.0f
 
-// グローバル変数としてオフセットを定義
-float accel_offset_global[3] = {0};
-float gyro_offset_global[3] = {0};
-
 int main() {
     stdio_init_all();
-    sleep_ms(2000); // シリアル出力待ち等
+    sleep_ms(500); // シリアル出力待ち等(短め)
 
     printf("倒立振子 + PID + Madgwick テスト開始\n");
 
@@ -40,7 +35,7 @@ int main() {
     mpu6050_reset();
     float accel_offset[3] = {0}, gyro_offset[3] = {0};
     printf("MPU6050キャリブレーション中。水平に置いて静止してください...\n");
-    mpu6050_calibrate(accel_offset_global, gyro_offset_global, 200); // サンプル数200は一例
+    mpu6050_calibrate(accel_offset, gyro_offset, 200); // サンプル数200は一例
     printf("キャリブレーション完了!\n");
 
     // 2) Madgwickフィルタ初期化
@@ -61,7 +56,7 @@ int main() {
     while (1) {
         // (A) MPU6050 オフセット後のデータ取得
         SensorData_t sensor_data;
-        mpu6050_adjusted_values(&sensor_data, accel_offset_global, gyro_offset_global);
+        mpu6050_adjusted_values(&sensor_data, accel_offset, gyro_offset);
 
         // (B) Δt
         absolute_time_t now = get_absolute_time();
@@ -76,11 +71,11 @@ int main() {
         // (D) PID計算 (目標ピッチ0度)
         float pid_output = PID_Update(&pid_pitch, pitch_target, pitch, dt);
 
-        // (F) サーボパルス計算
+        // (E) サーボパルス計算
         float right_pulse, left_pulse;
         calculate_servo_pulse(pid_output, &right_pulse, &left_pulse);
 
-        // (G) サーボパルス生成
+        // (F) サーボパルス生成
         set_servo_pulse(SERVO_PIN_RIGHT, right_pulse);
         set_servo_pulse(SERVO_PIN_LEFT,  left_pulse);
 

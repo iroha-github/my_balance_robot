@@ -21,7 +21,7 @@ void init_pwm_for_servo(uint pin, float neutral_us) {
     uint channel   = pwm_gpio_to_channel(pin);
     
     pwm_config config = pwm_get_default_config();
-    pwm_config_set_clkdiv(&config, 96.0f); // 例: wrap=24999, clkdiv=96 => 50Hz
+    pwm_config_set_clkdiv(&config, 100.0f); // 例: wrap=24999, clkdiv=100 => 50Hz
     pwm_config_set_wrap(&config, 24999);
     pwm_init(slice_num, &config, true);
     pwm_set_enabled(slice_num, true);
@@ -33,8 +33,6 @@ void init_pwm_for_servo(uint pin, float neutral_us) {
 
 
 void set_servo_pulse(uint pin, float pulse_us) {
-    if (pulse_us < 500.0f)  pulse_us = 500.0f;
-    if (pulse_us > 2500.0f) pulse_us = 2500.0f;
     
     float duty_cycle = pulse_us / (float)SERVO_PERIOD_US; // 20ms周期での比率
     float compare    = duty_cycle * 25000.0f;             // wrap=24999なら0~25000

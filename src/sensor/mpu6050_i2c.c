@@ -18,8 +18,6 @@ static const int MPU6050_ADDR = 0x68;
 #define ACCEL_LSB_2G 16384.0f
 #define GYRO_LSB_250 131.0f
 
-// #define I2C_PORT i2c1
-
 //---------------------------------------------------------------------------------
 // MPU6050 初期化/リセット
 //---------------------------------------------------------------------------------
@@ -79,7 +77,7 @@ void mpu6050_calibrate(float* accel_offset, float* gyro_offset, int num_samples)
     long gx_sum = 0, gy_sum = 0, gz_sum = 0;
 
     // 安定待ち
-    sleep_ms(500);
+    sleep_ms(1000);
 
     for (int i = 0; i < num_samples; i++) {
         int16_t accel_raw[3], gyro_raw[3], temp;
