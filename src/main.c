@@ -92,7 +92,6 @@ int main() {
 
     while (1) {
         // (A) MPU6050 オフセット後のデータ取得
-
         SensorData_t sensor_data;
         mpu6050_adjusted_values(&sensor_data, accel_offset_global, gyro_offset_global);
 
@@ -102,8 +101,7 @@ int main() {
         prev_time = now;
 
         // (C) Madgwick更新
-        MadgwickAHRSupdateIMU(&madgwick, sensor_data.gx_rad, sensor_data.gy_rad, sensor_data.gz_rad,
-                                sensor_data.ax_g, sensor_data.ay_g, sensor_data.az_g, dt);
+        MadgwickAHRSupdateIMU(&madgwick, sensor_data.gx_rad, sensor_data.gy_rad, sensor_data.gz_rad, sensor_data.ax_g, sensor_data.ay_g, sensor_data.az_g, dt);
         float roll, pitch, yaw;
         MadgwickGetEulerDeg(&madgwick, &roll, &pitch, &yaw);
 
