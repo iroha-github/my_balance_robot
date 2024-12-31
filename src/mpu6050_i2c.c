@@ -5,7 +5,6 @@
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
 
-
 #include "mpu6050_i2c.h"      // ヘッダ
 // Madgwickフィルタヘッダは「補正演算のために」読み込んでもOKだが、
 // ここではオフセット取得だけなので必須でなければなくてもよい。
@@ -120,7 +119,7 @@ void mpu6050_calibrate(float* accel_offset, float* gyro_offset, int num_samples)
 // オフセット補正後のデータ取得
 //---------------------------------------------------------------------------------
 
-void mpu6050_adjusted_values(float adj_accel[3], float adj_gyro[3], float accel_offset[3], float gyro_offset[3]) {
+void mpu6050_adjusted_values(SensorData_t* data, float accel_offset[3], float gyro_offset[3]) {
 
     // 生データ取得
     int16_t accel_raw[3], gyro_raw[3], temp_raw;
@@ -136,24 +135,16 @@ void mpu6050_adjusted_values(float adj_accel[3], float adj_gyro[3], float accel_
     float gz_corr = (float)gyro_raw[2] - gyro_offset[2];
 
     // LSB -> [g], [deg/s]
-    float ax_g = ax_corr / ACCEL_LSB_2G;
-    float ay_g = ay_corr / ACCEL_LSB_2G;
-    float az_g = az_corr / ACCEL_LSB_2G;
+    data->ax_g = ax_corr / ACCEL_LSB_2G;
+    data->ay_g = ay_corr / ACCEL_LSB_2G;
+    data->az_g = az_corr / ACCEL_LSB_2G;
 
     float gx_dps = gx_corr / GYRO_LSB_250; 
     float gy_dps = gy_corr / GYRO_LSB_250;
     float gz_dps = gz_corr / GYRO_LSB_250;
 
     // deg/s -> rad/s
-    float gx_rad = gx_dps * (float)M_PI / 180.0f;
-    float gy_rad = gy_dps * (float)M_PI / 180.0f;
-    float gz_rad = gz_dps * (float)M_PI / 180.0f;
-
-    adj_accel[0] = ax_g;
-    adj_accel[1] = ay_g;
-    adj_accel[2] = az_g;
-
-    adj_gyro[0] = gx_rad;
-    adj_gyro[1] = gy_rad;
-    adj_gyro[2] = gz_rad;
+    data->gx_rad = gx_dps * (float)M_PI / 180.0f;
+    data->gy_rad = gy_dps * (float)M_PI / 180.0f;
+    data->gz_rad = gz_dps * (float)M_PI / 180.0f;
 }

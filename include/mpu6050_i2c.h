@@ -8,6 +8,17 @@
 extern "C" {
 #endif
 
+// センサーデータを格納する構造体
+typedef struct {
+    float ax_g;
+    float ay_g;
+    float az_g;
+    float gx_rad;
+    float gy_rad;
+    float gz_rad;
+} SensorData_t;
+
+
 // MPU6050の初期化
 void mpu6050_reset(void);
 
@@ -18,7 +29,7 @@ void mpu6050_read_raw(int16_t accel[3], int16_t gyro[3], int16_t *temp);
 void mpu6050_calibrate(float *accel_offset, float *gyro_offset, int num_samples);
 
 // オフセット補正後の値を取得
-void mpu6050_adjusted_values(float adj_accel[3], float adj_gyro[3], float accel_offset[3], float gyro_offset[3]);
+void mpu6050_adjusted_values(SensorData_t* data, float accel_offset[3], float gyro_offset[3]);
 #ifdef __cplusplus
 }
 #endif

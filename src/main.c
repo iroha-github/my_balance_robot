@@ -93,15 +93,8 @@ int main() {
     while (1) {
         // (A) MPU6050 オフセット後のデータ取得
 
-        float adj_accel[3], adj_gyro[3];
-        mpu6050_adjusted_values(adj_accel, adj_gyro, accel_offset_global, gyro_offset_global);
-        
-        float gx_rad = adj_gyro[0];
-        float gy_rad = adj_gyro[1];
-        float gz_rad = adj_gyro[2];
-        float ax_g = adj_accel[0];
-        float ay_g = adj_accel[1];
-        float az_g = adj_accel[2];
+        SensorData_t sensor_data;
+        mpu6050_adjusted_values(&sensor_data, accel_offset_global, gyro_offset_global);
 
         // (B) Δt
         absolute_time_t now = get_absolute_time();
@@ -109,7 +102,8 @@ int main() {
         prev_time = now;
 
         // (C) Madgwick更新
-        MadgwickAHRSupdateIMU(&madgwick, gx_rad, gy_rad, gz_rad, ax_g, ay_g, az_g, dt);
+        MadgwickAHRSupdateIMU(&madgwick, sensor_data.gx_rad, sensor_data.gy_rad, sensor_data.gz_rad,
+                                sensor_data.ax_g, sensor_data.ay_g, sensor_data.az_g, dt);
         float roll, pitch, yaw;
         MadgwickGetEulerDeg(&madgwick, &roll, &pitch, &yaw);
 
