@@ -34,16 +34,21 @@ pico_sdk_init()
 # 実行ファイルのソース
 add_executable(my_balance_robot
     src/main.c
-    src/mpu6050_i2c.c
-    src/madgwick_filter.c
-    src/pid_controller.c
-    src/servo.c
+    src/sensor/mpu6050_i2c.c
+    src/filter/madgwick_filter.c
+    src/controller/pid_controller.c
+    src/servo/servo.c
 )
 
 # ヘッダファイルのディレクトリ
 target_include_directories(my_balance_robot PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/include
+    ${CMAKE_CURRENT_LIST_DIR}/src/sensor
+    ${CMAKE_CURRENT_LIST_DIR}/src/filter
+    ${CMAKE_CURRENT_LIST_DIR}/src/controller
+    ${CMAKE_CURRENT_LIST_DIR}/src/servo
 )
+
 
 target_link_libraries(my_balance_robot
     pico_stdlib

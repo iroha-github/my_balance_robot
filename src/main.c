@@ -4,8 +4,8 @@
 #include "hardware/i2c.h"
 #include "hardware/pwm.h"
 
-#include "mpu6050_i2c.h"       // <-- センサー操作のヘッダ
 #include "madgwick_filter.h"
+#include "mpu6050_i2c.h"       // <-- センサー操作のヘッダ
 #include "pid_controller.h"
 #include "servo.h"              // <-- サーボ操作のヘッダ
 #include "config.h"
@@ -13,18 +13,6 @@
 // --- 定数定義 ---
 #define SERVO_PIN_RIGHT 26
 #define SERVO_PIN_LEFT  27
-// #define I2C_PORT i2c1
-// #define I2C_SCL_PIN 10
-// #define I2C_SDA_PIN 11
-
-// 0SDA 4
-// 0SCL 5
-// 0SDA 12
-// 0SCL 13
-// 1SDA 14
-// 1SCL 15
-
-
 
 // PIDゲイン(要調整)
 #define PID_KP  10.0f
@@ -33,14 +21,6 @@
 
 // Madgwickフィルタゲイン
 #define MADGWICK_BETA 0.05f // 元々は0.05fだった
-
-// ±2g, ±250deg/sの場合
-#define ACCEL_LSB_2G 16384.0f
-#define GYRO_LSB_250 131.0f
-
-// 関数にstaticを付けると、その関数はそのファイル内でのみ有効になる
-// static void init_pwm_for_servo(uint pin);
-// static void set_servo_pulse(uint pin, float pulse_us);
 
 // グローバル変数としてオフセットを定義
 float accel_offset_global[3] = {0};
