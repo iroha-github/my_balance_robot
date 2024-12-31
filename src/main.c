@@ -52,8 +52,8 @@ int main() {
     PID_Init(&pid_pitch, PID_KP, PID_KI, PID_KD);
 
     // 4) サーボ用PWM初期化
-    init_pwm_for_servo(SERVO_PIN_RIGHT);
-    init_pwm_for_servo(SERVO_PIN_LEFT);
+    init_pwm_for_servo(SERVO_PIN_RIGHT, SERVO_NEUTRAL_RIGHT);
+    init_pwm_for_servo(SERVO_PIN_LEFT, SERVO_NEUTRAL_LEFT);
 
     absolute_time_t prev_time = get_absolute_time();
     float pitch_target = 0.0f; // 直立を0度とする

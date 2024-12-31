@@ -6,7 +6,7 @@
 // uint の定義
 typedef unsigned int uint;
 
-void init_pwm_for_servo(uint pin);
+void init_pwm_for_servo(uint pin, float neutral_us);
 
 void set_servo_pulse(uint pin, float pulse_us);
 

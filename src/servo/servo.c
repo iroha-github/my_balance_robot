@@ -14,7 +14,7 @@
 #define SERVO_MAX_LEFT  (SERVO_NEUTRAL_LEFT  + SERVO_RANGE_LEFT)
 
 
-void init_pwm_for_servo(uint pin) {
+void init_pwm_for_servo(uint pin, float neutral_us) {
     gpio_set_function(pin, GPIO_FUNC_PWM);
     
     uint slice_num = pwm_gpio_to_slice_num(pin);
@@ -27,7 +27,7 @@ void init_pwm_for_servo(uint pin) {
     pwm_set_enabled(slice_num, true);
     
     // 初期はニュートラル
-    set_servo_pulse(pin, SERVO_NEUTRAL_RIGHT);
+    set_servo_pulse(pin, neutral_us);
     // set_servo_pulse(SERVO_PIN_LEFT, SERVO_NEUTRAL_LEFT);
 }
 
