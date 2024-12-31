@@ -10,22 +10,18 @@
 #include "servo.h"              // <-- サーボ操作のヘッダ
 #include "config.h"
 
-// --- 定数定義 ---
-#define SERVO_PIN_RIGHT 26
-#define SERVO_PIN_LEFT  27
+// デバッグ出力
+#define DEBUG
+
 
 // PIDゲイン(要調整)
 #define PID_KP  10.0f
 #define PID_KI   0.0f
 #define PID_KD   1.0f
 
-// Madgwickフィルタゲイン
-#define MADGWICK_BETA 0.05f // 元々は0.05fだった
-
 // グローバル変数としてオフセットを定義
 float accel_offset_global[3] = {0};
 float gyro_offset_global[3] = {0};
-
 
 int main() {
     stdio_init_all();
@@ -80,68 +76,27 @@ int main() {
         // (D) PID計算 (目標ピッチ0度)
         float pid_output = PID_Update(&pid_pitch, pitch_target, pitch, dt);
 
-        // 連続回転サーボ速度指令 (例: ±1.0にクリップ)
+        // (E) サーボパルス受け渡し
         float right_speed = pid_output;
         float left_speed  = -pid_output;
 
-        if (right_speed > 1.0f)  right_speed = 1.0f;
-        if (right_speed < -1.0f) right_speed = -1.0f;
-        if (left_speed > 1.0f)   left_speed = 1.0f;
-        if (left_speed < -1.0f)  left_speed = -1.0f;
+        // (F) サーボパルス計算
+        float right_pulse, left_pulse;
+        calculate_servo_pulse(right_speed, left_speed, &right_pulse, &left_pulse);
 
-        // (E) サーボパルス生成(1500±500us)
-        float right_pulse = SERVO_NEUTRAL_US + SERVO_RANGE_US * right_speed;
-        float left_pulse  = SERVO_NEUTRAL_US + SERVO_RANGE_US * left_speed;
-
+        // (G) サーボパルス生成
         set_servo_pulse(SERVO_PIN_RIGHT, right_pulse);
         set_servo_pulse(SERVO_PIN_LEFT,  left_pulse);
 
         // デバッグ出力
-        // printf("---------------------------\n");
-        // printf("pitch=%.2f [deg], pid=%.2f\n", pitch, pid_output);
-        // printf("R_pulse=%.1f, L_pulse=%.1f\n", right_pulse, left_pulse);
-        printf(">pitch:%.2f\n",pitch);
-        printf(">pid:%.2f\n", pid_output);
-        printf(">R_pulse:%.1f\n", right_pulse);
-        printf(">L_pulse:%.1f\n", left_pulse);
-        sleep_ms(20);
+        #ifdef DEBUG
+            printf(">pitch:%.2f\n",pitch);
+            printf(">pid:%.2f\n", pid_output);
+            printf(">R_pulse:%.1f\n", right_pulse);
+            printf(">L_pulse:%.1f\n", left_pulse);
+            sleep_ms(20); // 50Hzという意味...？
+        #endif
     }
 
     return 0;
 }
-
-// //--------------------------------------------------
-// // サーボPWM初期化
-// //--------------------------------------------------
-// static void init_pwm_for_servo(uint pin) {
-//     gpio_set_function(pin, GPIO_FUNC_PWM); //GPIO機能を選択している，GPIO_FUNC_PWMはPWM機能を選択していることになる
-
-//     uint slice_num = pwm_gpio_to_slice_num(pin);
-//     uint channel   = pwm_gpio_to_channel(pin);
-
-//     pwm_config config = pwm_get_default_config();
-//     // 例: wrap=24999, clkdiv=96 => 50Hz
-//     pwm_config_set_clkdiv(&config, 96.0f);
-//     pwm_config_set_wrap(&config, 24999);
-//     pwm_init(slice_num, &config, true);
-//     pwm_set_enabled(slice_num, true);
-
-//     // 初期はニュートラル
-//     set_servo_pulse(pin, SERVO_NEUTRAL_US);
-// }
-
-// //--------------------------------------------------
-// // サーボ用パルス幅(μs)設定
-// //--------------------------------------------------
-// static void set_servo_pulse(uint pin, float pulse_us) {
-//     if (pulse_us < 500.0f)  pulse_us = 500.0f;
-//     if (pulse_us > 2500.0f) pulse_us = 2500.0f;
-
-//     float duty_cycle = pulse_us / (float)SERVO_PERIOD_US; // 20ms周期での比率
-//     float compare    = duty_cycle * 25000.0f;             // wrap=24999なら0~25000
-
-//     uint slice_num = pwm_gpio_to_slice_num(pin);
-//     uint channel   = pwm_gpio_to_channel(pin);
-
-//     pwm_set_chan_level(slice_num, channel, (uint16_t)compare);
-// }
