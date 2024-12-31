@@ -45,16 +45,15 @@ void set_servo_pulse(uint pin, float pulse_us) {
     pwm_set_chan_level(slice_num, channel, (uint16_t)compare);
 }
 
-void calculate_servo_pulse(float right_speed, float left_speed, float *right_pulse, float *left_pulse) {
+void calculate_servo_pulse(float pid_output, float *right_pulse, float *left_pulse) {
+    
     // 右モータのパルス幅計算
-    float right_pulse_us = SERVO_NEUTRAL_RIGHT + right_speed;
-    if (right_pulse_us > SERVO_MAX_RIGHT) right_pulse_us = SERVO_MAX_RIGHT;
-    if (right_pulse_us < SERVO_MIN_RIGHT) right_pulse_us = SERVO_MIN_RIGHT;
-    *right_pulse = right_pulse_us;
+    *right_pulse = SERVO_NEUTRAL_RIGHT + (SERVO_RANGE_RIGHT * pid_output);
+    if (*right_pulse > SERVO_MAX_RIGHT) *right_pulse = SERVO_MAX_RIGHT;
+    if (*right_pulse < SERVO_MIN_RIGHT) *right_pulse = SERVO_MIN_RIGHT;
     
     // 左モータのパルス幅計算
-    float left_pulse_us = SERVO_NEUTRAL_LEFT + left_speed;
-    if (left_pulse_us > SERVO_MAX_LEFT) left_pulse_us = SERVO_MAX_LEFT;
-    if (left_pulse_us < SERVO_MIN_LEFT) left_pulse_us = SERVO_MIN_LEFT;
-    *left_pulse = left_pulse_us;
+    *left_pulse = SERVO_NEUTRAL_LEFT - (SERVO_RANGE_LEFT * pid_output);
+    if (*left_pulse > SERVO_MAX_LEFT) *left_pulse = SERVO_MAX_LEFT;
+    if (*left_pulse < SERVO_MIN_LEFT) *left_pulse = SERVO_MIN_LEFT;
 }

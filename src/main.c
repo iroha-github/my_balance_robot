@@ -41,7 +41,7 @@ int main() {
     float accel_offset[3] = {0}, gyro_offset[3] = {0};
     printf("MPU6050キャリブレーション中。水平に置いて静止してください...\n");
     mpu6050_calibrate(accel_offset_global, gyro_offset_global, 200); // サンプル数200は一例
-    printf("キャリブ完了!\n");
+    printf("キャリブレーション完了!\n");
 
     // 2) Madgwickフィルタ初期化
     MadgwickFilter_t madgwick;
@@ -76,13 +76,9 @@ int main() {
         // (D) PID計算 (目標ピッチ0度)
         float pid_output = PID_Update(&pid_pitch, pitch_target, pitch, dt);
 
-        // (E) サーボパルス受け渡し
-        float right_speed = pid_output;
-        float left_speed  = -pid_output;
-
         // (F) サーボパルス計算
         float right_pulse, left_pulse;
-        calculate_servo_pulse(right_speed, left_speed, &right_pulse, &left_pulse);
+        calculate_servo_pulse(pid_output, &right_pulse, &left_pulse);
 
         // (G) サーボパルス生成
         set_servo_pulse(SERVO_PIN_RIGHT, right_pulse);
