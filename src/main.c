@@ -1,41 +1,60 @@
 // src/main.c
+
 #include <stdio.h>
 #include <math.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "hardware/pwm.h"
 
+// 点滅用ヘッダ
+#include "blink.h"
+
+// フィルタやセンサー、PIDなどのヘッダ
 #include "madgwick_filter.h"
-#include "mpu6050_i2c.h"       // センサー操作のヘッダ
+#include "mpu6050_i2c.h"  // センサー操作のヘッダ
 #include "pid_controller.h"
-#include "servo.h"              // サーボ操作のヘッダ
+#include "servo.h"        // サーボ操作のヘッダ
+
+// 設定値（ピン番号や定数）をまとめていると想定
 #include "config.h"
 
-// デバッグ出力
+// デバッグ出力用にコンパイルスイッチを用意（有効化なら #define DEBUG）
 #define DEBUG
 
 // グローバル変数としてオフセットを定義
 float accel_offset_global[3] = {0};
-float gyro_offset_global[3] = {0};
+float gyro_offset_global[3]  = {0};
 
 int main() {
+    // シリアル入出力初期化
     stdio_init_all();
-    sleep_ms(500); // シリアル出力待ち等(短め)
+    sleep_ms(500); // シリアル出力待ち等（短め）
 
     printf("倒立振子 + PID + Madgwick テスト開始\n");
 
-    // I2C初期化
+    // LED点滅初期化
+    if (!led_blink_init()) {
+        printf("LED blink init failed. Stopping.\n");
+        while (true) {
+            sleep_ms(1000);
+        }
+    }
+
+    // I2C初期化（400kHz）
     i2c_init(I2C_PORT, 400 * 1000);
     gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_PIN);
     gpio_pull_up(I2C_SCL_PIN);
 
-    // 1) MPU6050リセット & キャリブレーション
+    // 1) MPU6050 リセット & キャリブレーション
     mpu6050_reset();
     printf("MPU6050キャリブレーション中。水平に置いて静止してください...\n");
-    mpu6050_calibrate(accel_offset_global, gyro_offset_global, 200); // グローバル変数を使用
+    mpu6050_calibrate(accel_offset_global, gyro_offset_global, 200);
     printf("キャリブレーション完了!\n");
+
+    // LED点滅ステージ更新（任意・好きなタイミングで呼べる）
+    led_blink_update();
 
     // 2) Madgwickフィルタ初期化
     MadgwickFilter_t madgwick;
@@ -45,48 +64,58 @@ int main() {
     PID_t pid_pitch;
     PID_Init(&pid_pitch, PID_KP, PID_KI, PID_KD);
 
+    led_blink_update(); // 点滅更新
+
     // 4) サーボ用PWM初期化
     init_pwm_for_servo(SERVO_PIN_RIGHT, SERVO_NEUTRAL_RIGHT);
     init_pwm_for_servo(SERVO_PIN_LEFT,  SERVO_NEUTRAL_LEFT);
 
+    // 経過時間測定用
     absolute_time_t prev_time = get_absolute_time();
     float pitch_target = 0.0f; // 直立を0度とする
 
-    while (1) {
+    while (true) {
         // (A) MPU6050 オフセット後のデータ取得
         SensorData_t sensor_data;
         mpu6050_adjusted_values(&sensor_data, accel_offset_global, gyro_offset_global);
 
-        // (B) Δt
+        // (B) Δt の計算
         absolute_time_t now = get_absolute_time();
         float dt = (float)(to_us_since_boot(now) - to_us_since_boot(prev_time)) / 1e6f;
         prev_time = now;
 
-        // (C) Madgwick更新
-        MadgwickAHRSupdateIMU(&madgwick, sensor_data.gx_rad, sensor_data.gy_rad, sensor_data.gz_rad,
-                                sensor_data.ax_g, sensor_data.ay_g, sensor_data.az_g, dt);
+        // (C) Madgwick更新（ジャイロ・加速度データから姿勢推定）
+        MadgwickAHRSupdateIMU(
+            &madgwick,
+            sensor_data.gx_rad, sensor_data.gy_rad, sensor_data.gz_rad,
+            sensor_data.ax_g,  sensor_data.ay_g,    sensor_data.az_g,
+            dt
+        );
         float roll, pitch, yaw;
         MadgwickGetEulerDeg(&madgwick, &roll, &pitch, &yaw);
 
-        // (D) PID計算 (目標ピッチ0度)
+        // (D) PID計算（目標ピッチ0度）
         float pid_output = PID_Update(&pid_pitch, pitch_target, pitch, dt);
 
         // (E) サーボパルス計算
         float right_pulse, left_pulse;
         calculate_servo_pulse(pid_output, &right_pulse, &left_pulse);
 
-        // (F) サーボパルス生成output
+        // (F) サーボパルス生成
         set_servo_pulse(SERVO_PIN_RIGHT, right_pulse);
         set_servo_pulse(SERVO_PIN_LEFT,  left_pulse);
 
         // デバッグ出力
         #ifdef DEBUG
-            printf(">pitch:%.2f\n", pitch);
-            printf(">pid_output:%.2f\n", pid_output);
-            printf(">Right_pulse:%.1f\n", right_pulse);
-            printf(">Left_pulse:%.1f\n", left_pulse);
-            sleep_ms(20); // 50Hzという意味...？
+            printf("Pitch: %.2f deg\n", pitch);
+            printf("PID Output: %.2f\n", pid_output);
+            printf("Right Pulse: %.1f\n", right_pulse);
+            printf("Left  Pulse: %.1f\n", left_pulse);
+            sleep_ms(20); // 50Hz相当
         #endif
+
+        // 必要に応じてLED点滅更新
+        // led_blink_update();
     }
 
     return 0;
