@@ -2,13 +2,19 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// --- 定数定義 ---
-#define SERVO_PIN_RIGHT 26
-#define SERVO_PIN_LEFT  27
+// PIDゲイン(要調整)
+#define PID_KP  0.5f
+#define PID_KI   0.1f
+#define PID_KD   0.0f
 
-#define I2C_PORT i2c1
-#define I2C_SDA_PIN 11
-#define I2C_SCL_PIN 10
+
+// --- 定数定義 ---
+#define SERVO_PIN_RIGHT 18
+#define SERVO_PIN_LEFT  19
+
+#define I2C_PORT i2c0
+#define I2C_SDA_PIN 12
+#define I2C_SCL_PIN 13
 
 // 0SDA 4
 // 0SCL 5
@@ -33,5 +39,7 @@
 #define SERVO_FREQ_HZ   50
 #define SERVO_PERIOD_US (1000000 / SERVO_FREQ_HZ) // 20000us = 20ms
 
+//　サーボ補正値
+#define SERVO_CORRECTION 30.0f
 
 #endif // CONFIG_H
