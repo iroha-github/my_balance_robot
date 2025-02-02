@@ -2,9 +2,11 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hcsr04.h"
-#include "config.h" // ULTRA_TRIG_PIN, ULTRA_ECHO_PIN などの定義
+#include "config.h"
 
-// 音速から算出した1usあたりの往復距離換算 (約0.017[cm/us])
+// 音速を用いた1usあたりの移動距離(往復分)を考慮
+// 通常340m/s = 34000cm/s
+// Echoパルスは往復時間なので 1usあたり約0.034cm/2 = 0.017cm
 #define SOUND_SPEED_PER_US 0.017f
 
 void init_hcsr04(void) {
@@ -16,7 +18,7 @@ void init_hcsr04(void) {
     // Echoピン 入力設定
     gpio_init(ULTRA_ECHO_PIN);
     gpio_set_dir(ULTRA_ECHO_PIN, GPIO_IN);
-    // 必要に応じてpull-up/downを設定 (回路に合わせる)
+    // 必要に応じて pull_up/down を設定(回路に合わせる)
 }
 
 float measure_distance_cm(void) {
@@ -32,16 +34,16 @@ float measure_distance_cm(void) {
     while (gpio_get(ULTRA_ECHO_PIN) == 0) {
         // タイムアウト対策(約200ms程度)
         if (absolute_time_diff_us(start_wait, get_absolute_time()) > 200000) {
-            return -1.0f; // タイムアウト
+            return -1.0f; // タイムアウト(立ち上がり来ない)
         }
     }
     absolute_time_t echo_start = get_absolute_time();
 
     // 3) EchoピンがLowになるのを待つ
     while (gpio_get(ULTRA_ECHO_PIN) == 1) {
-        // タイムアウト対策
+        // タイムアウト対策(約200ms程度)
         if (absolute_time_diff_us(echo_start, get_absolute_time()) > 200000) {
-            return -2.0f; // タイムアウト
+            return -2.0f; // タイムアウト(立ち下がり来ない)
         }
     }
     absolute_time_t echo_end = get_absolute_time();
