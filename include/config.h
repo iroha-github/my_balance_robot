@@ -9,8 +9,8 @@
 
 
 // --- 定数定義 ---
-#define SERVO_PIN_RIGHT 18
-#define SERVO_PIN_LEFT  19
+#define SERVO_PIN_RIGHT 6
+#define SERVO_PIN_LEFT  7
 
 #define I2C_PORT i2c0
 #define I2C_SDA_PIN 12
