@@ -45,6 +45,7 @@ add_executable(${PROJECT_NAME}
     src/filter/madgwick_filter.c
     src/controller/pid_controller.c
     src/servo/servo.c
+    src/interface/onboard_led.c
 )
 
 # 必須／ヘッダファイルのディレクトリ
@@ -54,6 +55,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src/filter
     ${CMAKE_CURRENT_LIST_DIR}/src/controller
     ${CMAKE_CURRENT_LIST_DIR}/src/servo
+    ${CMAKE_CURRENT_LIST_DIR}/src/interface
 )
 
 # 必須／リンクするライブラリを指定
