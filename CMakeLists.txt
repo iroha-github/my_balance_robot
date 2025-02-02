@@ -65,6 +65,11 @@ target_link_libraries(${PROJECT_NAME}
     hardware_pwm
 )
 
+# 必須／raspberry pi picoのcyw43のサポート
+if (PICO_CYW43_SUPPORTED)
+    target_link_libraries(${PROJECT_NAME} pico_cyw43_arch_none)
+endif()
+
 
 pico_add_extra_outputs(${PROJECT_NAME})
 

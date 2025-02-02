@@ -6,6 +6,7 @@
 #include "hardware/pwm.h"
 
 #include "madgwick_filter.h"
+#include "onboard_led.h"
 #include "mpu6050_i2c.h"       // センサー操作のヘッダ
 #include "pid_controller.h"
 #include "servo.h"              // サーボ操作のヘッダ
@@ -20,9 +21,13 @@ float gyro_offset_global[3] = {0};
 
 int main() {
     stdio_init_all();
+    pico_led_init(); // LED初期化
+    pico_set_led(true); // LED ON
     sleep_ms(500); // シリアル出力待ち等(短め)
 
     printf("倒立振子 + PID + Madgwick テスト開始\n");
+
+    pico_set_led(false); // LED OFF
 
     // I2C初期化
     i2c_init(I2C_PORT, 400 * 1000);
@@ -51,6 +56,8 @@ int main() {
 
     absolute_time_t prev_time = get_absolute_time();
     float pitch_target = 0.0f; // 直立を0度とする
+
+    pico_set_led(true); // LED ON
 
     while (1) {
         // (A) MPU6050 オフセット後のデータ取得
