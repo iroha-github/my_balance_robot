@@ -46,12 +46,12 @@ void set_servo_pulse(uint pin, float pulse_us) {
 void calculate_servo_pulse(float pid_output, float *right_pulse, float *left_pulse) {
     
     // 右モータのパルス幅計算
-    *right_pulse = SERVO_NEUTRAL_RIGHT + (SERVO_RANGE_RIGHT * pid_output);
+    *right_pulse = SERVO_NEUTRAL_RIGHT + (SERVO_RANGE_RIGHT * pid_output/SERVO_CORRECTION);
     if (*right_pulse > SERVO_MAX_RIGHT) *right_pulse = SERVO_MAX_RIGHT;
     if (*right_pulse < SERVO_MIN_RIGHT) *right_pulse = SERVO_MIN_RIGHT;
     
     // 左モータのパルス幅計算
-    *left_pulse = SERVO_NEUTRAL_LEFT - (SERVO_RANGE_LEFT * pid_output);
+    *left_pulse = SERVO_NEUTRAL_LEFT - (SERVO_RANGE_LEFT * pid_output/SERVO_CORRECTION);
     if (*left_pulse > SERVO_MAX_LEFT) *left_pulse = SERVO_MAX_LEFT;
     if (*left_pulse < SERVO_MIN_LEFT) *left_pulse = SERVO_MIN_LEFT;
 }
