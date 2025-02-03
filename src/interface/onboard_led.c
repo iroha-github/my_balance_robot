@@ -1,8 +1,14 @@
 #include "onboard_led.h"
 
 #include "pico/stdlib.h"   // gpio_init, gpio_set_dir, gpio_put などの関数宣言用
+
 #ifdef PICO_DEFAULT_LED_PIN
 #include "hardware/gpio.h"
+#endif
+
+//cyw43_archのwarningを抑制
+#ifdef CYW43_WL_GPIO_LED_PIN
+#include "pico/cyw43_arch.h"
 #endif
 
 #include <stdio.h>

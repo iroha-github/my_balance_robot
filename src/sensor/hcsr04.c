@@ -34,7 +34,7 @@ float measure_distance_cm(void) {
     while (gpio_get(ULTRA_ECHO_PIN) == 0) {
         // タイムアウト対策(約200ms程度)
         if (absolute_time_diff_us(start_wait, get_absolute_time()) > 200000) {
-            return -1.0f; // タイムアウト(立ち上がり来ない)
+            return -1.0f; // タイムアウト(立ち上がり来ない) 
         }
     }
     absolute_time_t echo_start = get_absolute_time();

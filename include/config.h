@@ -30,8 +30,8 @@
 // ---------------------------------------------------------
 // ★★★ 追加定義 ★★★ 
 // HC-SR04ピン (Trig, Echo)
-#define ULTRA_TRIG_PIN 10
-#define ULTRA_ECHO_PIN 11
+#define ULTRA_TRIG_PIN 16
+#define ULTRA_ECHO_PIN 17
 
 // ロータリスイッチ ピン (例: 18,19,20,21)
 #define ROTARY_SW_PIN1 18
