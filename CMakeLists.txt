@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
     src/servo/servo.c
     src/interface/onboard_led.c
     src/interface/rotary_switch.c # ★追加
+    src/interface/fullcolor_led.c # ★追加
 )
 
 # ヘッダファイルのディレクトリ

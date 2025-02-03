@@ -39,4 +39,9 @@
 #define ROTARY_SW_PIN3 20
 #define ROTARY_SW_PIN4 21
 
+// ★ 追加定義 ★ フルカラーLEDピン
+#define FULLCOLOR_LED_R_PIN 2
+#define FULLCOLOR_LED_G_PIN 3
+#define FULLCOLOR_LED_B_PIN 4
+
 #endif // CONFIG_H
