@@ -18,6 +18,10 @@ static const int MPU6050_ADDR = 0x68;
 #define ACCEL_LSB_2G 16384.0f
 #define GYRO_LSB_250 131.0f
 
+// #define DEBUG_mpu  // デバッグ出力を有効にする
+
+
+
 //---------------------------------------------------------------------------------
 // MPU6050 初期化/リセット
 //---------------------------------------------------------------------------------
@@ -43,6 +47,7 @@ void mpu6050_reset() {
 //---------------------------------------------------------------------------------
 // 生データ読み取り
 //---------------------------------------------------------------------------------
+
 void mpu6050_read_raw(int16_t accel[3], int16_t gyro[3], int16_t* temp) {
     uint8_t reg = 0x3B;  // ACCEL_XOUT_H
     uint8_t buffer[6];
@@ -111,6 +116,15 @@ void mpu6050_calibrate(float* accel_offset, float* gyro_offset, int num_samples)
     gyro_offset[0] = gx_avg;
     gyro_offset[1] = gy_avg;
     gyro_offset[2] = gz_avg;
+
+    #ifdef DEBUG_mpu
+    accel_offset[0] = 0;  // デバッグ用
+    accel_offset[1] = 0;
+    accel_offset[2] = 0;
+    gyro_offset[0] = 0;
+    gyro_offset[1] = 0;
+    gyro_offset[2] = 0;
+    #endif
 }
 
 //---------------------------------------------------------------------------------
@@ -141,8 +155,18 @@ void mpu6050_adjusted_values(SensorData_t* data, float accel_offset[3], float gy
     float gy_dps = gy_corr / GYRO_LSB_250;
     float gz_dps = gz_corr / GYRO_LSB_250;
 
-    // deg/s -> rad/s
+    // [rad/s] に変換
     data->gx_rad = gx_dps * (float)M_PI / 180.0f;
     data->gy_rad = gy_dps * (float)M_PI / 180.0f;
     data->gz_rad = gz_dps * (float)M_PI / 180.0f;
+    
+    #ifdef DEBUG_mpu
+    data->ax_g = 0.0f;  // デバッグ用
+    data->ay_g = 0.0f;
+    data->az_g = 0.0f;
+    data->gx_rad = 0.0f;
+    data->gy_rad = 0.0f;
+    data->gz_rad = 0.0f;
+    #endif
+    
 }

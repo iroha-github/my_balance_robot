@@ -21,6 +21,9 @@
 // ★★★ 追加 ★★★ フルカラーLED制御ヘッダ
 #include "fullcolor_led.h"
 
+// ★★★ 追加 ★★★ シリアル入力（コマンド）制御モジュール
+#include "command_input.h"
+
 #define DEBUG  // ★DEBUG出力を有効にする
 
 // グローバルオフセット（キャリブレーション用）
@@ -40,7 +43,7 @@ int main() {
     fullcolor_led_init();
     // オフにする場合： set_fullcolor_led_rgb(0, 0, 0);
 
-    printf("倒立振子 + HC-SR04 + ロータリスイッチ + フルカラーLED テスト\n");
+    printf("倒立振子 + HC-SR04 + ロータリスイッチ + フルカラーLED + シリアル入力テスト\n");
 
     // (3) I2C (MPU6050) 初期化
     i2c_init(I2C_PORT, 400 * 1000);
@@ -73,8 +76,12 @@ int main() {
     init_pwm_for_servo(SERVO_PIN_RIGHT, SERVO_NEUTRAL_RIGHT);
     init_pwm_for_servo(SERVO_PIN_LEFT,  SERVO_NEUTRAL_LEFT);
 
-    // (10) 倒立振子の目標ピッチ角
-    float pitch_target = 0.0f;
+    // (10) 倒立振子の目標ピッチ角（基本は直立＝0.0 deg）
+    float base_pitch_target = 0.0f;
+
+    // ★★★ 追加 ★★★ シリアル入力による動作指令を保持する変数
+    CommandInput_t cmd = {0.0f, 0.0f};
+    init_command_input();
 
     // 時間計測用
     absolute_time_t prev_time = get_absolute_time();
@@ -83,6 +90,9 @@ int main() {
     pico_set_led(true);
 
     while (1) {
+        // ★★★ ① シリアル入力からコマンドを更新
+        update_command_input(&cmd);
+
         // 1) MPU6050 取得
         SensorData_t sensor_data;
         mpu6050_adjusted_values(&sensor_data, accel_offset_global, gyro_offset_global);
@@ -102,16 +112,27 @@ int main() {
         float roll_deg, pitch_deg, yaw_deg;
         MadgwickGetEulerDeg(&madgwick, &roll_deg, &pitch_deg, &yaw_deg);
 
-        // 4) PID 制御 (ターゲットは pitch=0.0度)
-        float pid_output = PID_Update(&pid_pitch, pitch_target, pitch_deg, dt);
+        // ★★★ ② シリアル入力で得た前後指令を目標ピッチに加える
+        float effective_pitch_target = base_pitch_target + cmd.pitch_offset;
 
-        // 5) サーボ出力計算 & セット
+        // 4) PID 制御 (ターゲットは effective_pitch_target)
+        float pid_output = PID_Update(&pid_pitch, effective_pitch_target, pitch_deg, dt);
+
+        // 5) サーボ出力計算
         float right_pulse, left_pulse;
         calculate_servo_pulse(pid_output, &right_pulse, &left_pulse);
+
+        // ★★★ ③ シリアル入力で得た左右旋回指令をサーボパルスに加える
+        // 右側に turn_offset、左側に -turn_offset を加える（※各サーボの範囲内に収める必要あり）
+        right_pulse += cmd.turn_offset;
+        left_pulse  -= cmd.turn_offset;
+        // ※ 必要なら、SERVO_MIN/MAX を用いて clamp（制限）してください
+
+        // サーボ出力設定
         set_servo_pulse(SERVO_PIN_RIGHT, right_pulse);
         set_servo_pulse(SERVO_PIN_LEFT,  left_pulse);
 
-        // 6) ロータリスイッチ状態を読み取り
+        // 6) ロータリスイッチ状態を読み取り（従来通り）
         int mode = read_rotary_switch_mode();
 
         // 7) 距離センサ (mode=0 の時だけ計測例)
@@ -160,10 +181,11 @@ int main() {
                 break;
         }
 
-        printf(">pitch: %.2f deg\n", pitch_deg);
+        printf(">pitch[deg]: %.2f\n",pitch_deg);
+        printf(">effective_target[deg]: %.2f\n",effective_pitch_target);
         printf(">pid_output: %.2f\n", pid_output);
         printf(">Right_pulse: %.1f\n", right_pulse);
-        printf(">Left_pulse: %.1f\n", left_pulse);
+        printf(">Left_pulse: %.1f\n",  left_pulse);
 
         if (mode == 0) {
             if (distance >= 0.0f) {
