@@ -29,7 +29,7 @@ int onboard_led_init(void) {
 void onboard_led_set(bool status) {
 #if defined(PICO_DEFAULT_LED_PIN)
     // Just set the GPIO on or off
-    gpio_put(PICO_DEFAULT_LED_PIN, led_on);
+    gpio_put(PICO_DEFAULT_LED_PIN, status);
 #elif defined(CYW43_WL_GPIO_LED_PIN)
     // WIFI "ドライバ" に GPIO のオンまたはオフを設定するように依頼します
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, status);
