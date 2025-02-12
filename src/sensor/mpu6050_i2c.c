@@ -24,7 +24,7 @@ static const int MPU6050_ADDR = 0x68;
 void mpu6050_reset() {
     uint8_t buf[] = {0x6B, 0x80};  // PWR_MGMT_1: デバイスリセット
     i2c_write_blocking(I2C_PORT, MPU6050_ADDR, buf, 2, false);
-    sleep_ms(150);
+    sleep_ms(200);
 
     // スリープ解除
     buf[1] = 0x00;

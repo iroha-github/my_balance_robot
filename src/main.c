@@ -34,7 +34,7 @@ int main() {
     // 1) MPU6050リセット & キャリブレーション
     mpu6050_reset();
     printf("MPU6050キャリブレーション中。水平に置いて静止してください...\n");
-    mpu6050_calibrate(accel_offset_global, gyro_offset_global, 200); // グローバル変数を使用
+    mpu6050_calibrate(accel_offset_global, gyro_offset_global, 500); // グローバル変数を使用
     printf("キャリブレーション完了!\n");
 
     // 2) Madgwickフィルタ初期化
