@@ -5,16 +5,12 @@
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
 
-#include "mpu6050_i2c.h"      // ヘッダ
-// Madgwickフィルタヘッダは「補正演算のために」読み込んでもOKだが、
-// ここではオフセット取得だけなので必須でなければなくてもよい。
+#include "mpu6050_i2c.h"
+#include "config.h"
 
-#include "config.h"           // ピン設定
-
-// MPU6050のI2Cアドレス (0x68)
 static const int MPU6050_ADDR = 0x68;
 
-// ±2g, ±250deg/s 設定の場合のLSB
+// ±2g, ±250deg/s 設定時のLSB
 #define ACCEL_LSB_2G 16384.0f
 #define GYRO_LSB_250 131.0f
 
@@ -28,7 +24,7 @@ void mpu6050_reset() {
 
     // スリープ解除
     buf[1] = 0x00;
-    i2c_write_blocking(I2C_PORT, MPU6050_ADDR, buf, 2, false); 
+    i2c_write_blocking(I2C_PORT, MPU6050_ADDR, buf, 2, false);
     sleep_ms(10);
 
     // ジャイロレンジ ±250 deg/s
@@ -76,7 +72,6 @@ void mpu6050_calibrate(float* accel_offset, float* gyro_offset, int num_samples)
     long ax_sum = 0, ay_sum = 0, az_sum = 0;
     long gx_sum = 0, gy_sum = 0, gz_sum = 0;
 
-    // 安定待ち
     sleep_ms(1000);
 
     for (int i = 0; i < num_samples; i++) {
@@ -93,7 +88,6 @@ void mpu6050_calibrate(float* accel_offset, float* gyro_offset, int num_samples)
         sleep_ms(5);
     }
 
-    // 平均
     float ax_avg = (float)ax_sum / num_samples;
     float ay_avg = (float)ay_sum / num_samples;
     float az_avg = (float)az_sum / num_samples;
@@ -101,13 +95,12 @@ void mpu6050_calibrate(float* accel_offset, float* gyro_offset, int num_samples)
     float gy_avg = (float)gy_sum / num_samples;
     float gz_avg = (float)gz_sum / num_samples;
 
-    // 加速度オフセット計算(±2g設定時)
-    accel_offset[0] = ax_avg;                // x => 0gが理想
-    accel_offset[1] = ay_avg;                // y => 0gが理想
-    accel_offset[2] = az_avg - 16384.0f;     // z => +1g(=16384LSB)が理想
+    // 加速度オフセット(±2g)
+    accel_offset[0] = ax_avg;
+    accel_offset[1] = ay_avg;
+    accel_offset[2] = az_avg - 16384.0f; // z軸は1gぶん差し引く
 
-    // ジャイロオフセット(±250deg/s設定時)
-    // ジャイロraw [LSB], 0が理想
+    // ジャイロオフセット(±250deg/s)
     gyro_offset[0] = gx_avg;
     gyro_offset[1] = gy_avg;
     gyro_offset[2] = gz_avg;
@@ -116,14 +109,11 @@ void mpu6050_calibrate(float* accel_offset, float* gyro_offset, int num_samples)
 //---------------------------------------------------------------------------------
 // オフセット補正後のデータ取得
 //---------------------------------------------------------------------------------
-
 void mpu6050_adjusted_values(SensorData_t* data, float accel_offset[3], float gyro_offset[3]) {
 
-    // 生データ取得
     int16_t accel_raw[3], gyro_raw[3], temp_raw;
     mpu6050_read_raw(accel_raw, gyro_raw, &temp_raw);
 
-    // オフセット補正
     float ax_corr = (float)accel_raw[0] - accel_offset[0];
     float ay_corr = (float)accel_raw[1] - accel_offset[1];
     float az_corr = (float)accel_raw[2] - accel_offset[2];
@@ -132,7 +122,6 @@ void mpu6050_adjusted_values(SensorData_t* data, float accel_offset[3], float gy
     float gy_corr = (float)gyro_raw[1] - gyro_offset[1];
     float gz_corr = (float)gyro_raw[2] - gyro_offset[2];
 
-    // LSB -> [g], [deg/s]
     data->ax_g = ax_corr / ACCEL_LSB_2G;
     data->ay_g = ay_corr / ACCEL_LSB_2G;
     data->az_g = az_corr / ACCEL_LSB_2G;

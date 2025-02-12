@@ -18,11 +18,6 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
 set(PICO_BOARD pico CACHE STRING "Board type")
 
 include(pico_sdk_import.cmake)
@@ -31,16 +26,15 @@ project(my_balance_robot C CXX ASM)
 
 pico_sdk_init()
 
-# 実行ファイルのソース
 add_executable(my_balance_robot
     src/main.c
     src/sensor/mpu6050_i2c.c
+    src/sensor/ultrasonic.c
     src/filter/madgwick_filter.c
     src/controller/pid_controller.c
     src/servo/servo.c
 )
 
-# ヘッダファイルのディレクトリ
 target_include_directories(my_balance_robot PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/include
     ${CMAKE_CURRENT_LIST_DIR}/src/sensor
@@ -48,7 +42,6 @@ target_include_directories(my_balance_robot PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src/controller
     ${CMAKE_CURRENT_LIST_DIR}/src/servo
 )
-
 
 target_link_libraries(my_balance_robot
     pico_stdlib
