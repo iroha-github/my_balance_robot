@@ -5,12 +5,12 @@
 // ---------------------------------------------------------
 // 既存の定義
 // ---------------------------------------------------------
-#define PID_KP  0.5f
-#define PID_KI  0.1f
+#define PID_KP  0.5f //default 0.5
+#define PID_KI  0.5f
 #define PID_KD  0.0f
 
-#define SERVO_PIN_RIGHT 6
-#define SERVO_PIN_LEFT  7
+#define SERVO_PIN_RIGHT 7
+#define SERVO_PIN_LEFT  6
 
 #define I2C_PORT i2c0
 #define I2C_SDA_PIN 12

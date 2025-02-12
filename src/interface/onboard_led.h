@@ -26,14 +26,14 @@ extern "C" {
  *
  * @return 0 成功、負の値 エラー
  */
-int pico_led_init(void);
+int onboard_led_init(void);
 
 /**
  * @brief オンボードLEDの状態を設定します。
  *
  * @param status true でLED ON、false でLED OFF
  */
-void pico_set_led(bool status);
+void onboard_led_set(bool status);
 
 #ifdef __cplusplus
 }

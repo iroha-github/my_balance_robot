@@ -15,7 +15,7 @@ float measure_distance_cm(void);
  * @brief HC-SR04用GPIO初期化を行う
  *        (trig, echoピンの方向設定など)
  */
-void init_hcsr04(void);
+void hcsr04_init(void);
 
 #ifdef __cplusplus
 }

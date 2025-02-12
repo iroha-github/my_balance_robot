@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 
-int pico_led_init(void) {
+int onboard_led_init(void) {
 #if defined(PICO_DEFAULT_LED_PIN)
     // LED に GPIO を使用するデバイス（Pico など）は PICO_DEFAULT_LED_PIN を定義します
     // そのため、通常の GPIO 機能を使用して LED をオンおよびオフにすることができます
@@ -26,7 +26,7 @@ int pico_led_init(void) {
 #endif
 }
 
-void pico_set_led(bool status) {
+void onboard_led_set(bool status) {
 #if defined(PICO_DEFAULT_LED_PIN)
     // Just set the GPIO on or off
     gpio_put(PICO_DEFAULT_LED_PIN, led_on);

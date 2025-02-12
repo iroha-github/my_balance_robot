@@ -9,7 +9,7 @@
 // Echoパルスは往復時間なので 1usあたり約0.034cm/2 = 0.017cm
 #define SOUND_SPEED_PER_US 0.017f
 
-void init_hcsr04(void) {
+void hcsr04_init(void) {
     // Trigピン 出力設定
     gpio_init(ULTRA_TRIG_PIN);
     gpio_set_dir(ULTRA_TRIG_PIN, GPIO_OUT);

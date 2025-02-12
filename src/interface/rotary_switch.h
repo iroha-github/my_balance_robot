@@ -9,7 +9,7 @@ extern "C" {
  * @brief ロータリスイッチのGPIO初期化
  *        (gpio18,19,20,21の入力設定・PullDownなど)
  */
-void init_rotary_switch(void);
+void rotary_switch_init(void);
 
 /**
  * @brief ロータリスイッチ(4ピン)を読んで現在のモードを返す

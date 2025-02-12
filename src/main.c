@@ -13,16 +13,10 @@
 #include "servo.h"
 #include "onboard_led.h"
 #include "config.h"
-
-// ★ ロータリスイッチとHC-SR04
-#include "rotary_switch.h"
+#include "rotary_switch.h" 
 #include "hcsr04.h"
-
-// ★★★ 追加 ★★★ フルカラーLED制御ヘッダ
 #include "fullcolor_led.h"
-
-// ★★★ 追加 ★★★ シリアル入力（コマンド）制御モジュール
-#include "command_input.h"
+#include "command_input.h" // コマンド入力用
 
 #define DEBUG  // ★DEBUG出力を有効にする
 
@@ -33,30 +27,26 @@ float gyro_offset_global[3]  = {0};
 int main() {
     stdio_init_all();
 
-    // (1) オンボードLEDの初期化と点灯テスト
-    pico_led_init();
-    pico_set_led(true);
-    sleep_ms(500);
-    pico_set_led(false);
-
-    // (2) ★ フルカラーLEDの初期化
-    fullcolor_led_init();
-    // オフにする場合： set_fullcolor_led_rgb(0, 0, 0);
-
     printf("倒立振子 + HC-SR04 + ロータリスイッチ + フルカラーLED + シリアル入力テスト\n");
 
-    // (3) I2C (MPU6050) 初期化
+    // (1) オンボードLEDの初期化と動作テスト
+    onboard_led_init();
+    onboard_led_set(true);
+
+    // (2) I2C (MPU6050) 初期化
     i2c_init(I2C_PORT, 400 * 1000);
     gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_PIN);
     gpio_pull_up(I2C_SCL_PIN);
 
-    // (4) 超音波センサ HC-SR04 初期化
-    init_hcsr04();
+    // (3) 各種初期化
+    fullcolor_led_init(); // フルカラーLEDの初期化
+    hcsr04_init(); // HC-SR04の初期化
+    rotary_switch_init(); // ロータリスイッチの初期化
 
-    // (5) ロータリスイッチ 初期化
-    init_rotary_switch();
+    sleep_ms(500);
+    onboard_led_set(false);
 
     // (6) MPU6050 リセット & キャリブレーション
     mpu6050_reset();
@@ -79,7 +69,7 @@ int main() {
     // (10) 倒立振子の目標ピッチ角（基本は直立＝0.0 deg）
     float base_pitch_target = 0.0f;
 
-    // ★★★ 追加 ★★★ シリアル入力による動作指令を保持する変数
+    // シリアル入力による動作指令を保持する変数
     CommandInput_t cmd = {0.0f, 0.0f};
     init_command_input();
 
@@ -87,7 +77,7 @@ int main() {
     absolute_time_t prev_time = get_absolute_time();
 
     // 一度オンボードLEDを点灯
-    pico_set_led(true);
+    onboard_led_set(true);
 
     while (1) {
         // ★★★ ① シリアル入力からコマンドを更新

@@ -3,7 +3,7 @@
 #include "hardware/gpio.h"
 #include "config.h" // ROTARY_SW_PIN1, ROTARY_SW_PIN2, ROTARY_SW_PIN3, ROTARY_SW_PIN4
 
-void init_rotary_switch(void) {
+void rotary_switch_init(void) {
     // GPIO18,19,20,21 入力設定 (例: PullDown)
     gpio_init(ROTARY_SW_PIN1);
     gpio_set_dir(ROTARY_SW_PIN1, GPIO_IN);
