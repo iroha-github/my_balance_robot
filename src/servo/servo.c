@@ -48,3 +48,16 @@ void calculate_servo_pulse(float pid_output, float *right_pulse, float *left_pul
     if (*left_pulse > SERVO_MAX_LEFT)  *left_pulse = SERVO_MAX_LEFT;
     if (*left_pulse < SERVO_MIN_LEFT)  *left_pulse = SERVO_MIN_LEFT;
 }
+
+int value;
+
+void calculate_servo_turn_pulse(float pid_output, float *right_pulse, float *left_pulse) {
+    // pid_outputを使って左右のパルス幅を計算
+        *right_pulse = SERVO_NEUTRAL_RIGHT + (SERVO_RANGE_RIGHT * pid_output / SERVO_CORRECTION);
+        if (*right_pulse > SERVO_MAX_RIGHT) *right_pulse = SERVO_MAX_RIGHT;
+        if (*right_pulse < SERVO_MIN_RIGHT) *right_pulse = SERVO_MIN_RIGHT;
+        
+        *left_pulse  = SERVO_NEUTRAL_LEFT  + (SERVO_RANGE_LEFT  * pid_output / SERVO_CORRECTION);
+        if (*left_pulse > SERVO_MAX_LEFT)  *left_pulse = SERVO_MAX_LEFT;
+        if (*left_pulse < SERVO_MIN_LEFT)  *left_pulse = SERVO_MIN_LEFT;
+}

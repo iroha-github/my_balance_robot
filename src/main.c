@@ -112,14 +112,12 @@ static void set_leds_for_mode(RobotMode_t mode) {
 // メイン関数
 int main() {
     stdio_init_all();
+    sleep_ms(100); // シリアル出力待ち
 
-    // LED点灯
+    //LED点灯
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
     gpio_put(PICO_DEFAULT_LED_PIN, 1);
-
-
-    sleep_ms(500); // シリアル出力待ち
 
     printf("倒立振子 + PID + Madgwick + 距離センサ + モード制御\n");
 
@@ -224,13 +222,15 @@ int main() {
                 if (distance_cm > 0 && distance_cm <= 10.0f) {
                     // 後進させたいのでPID出力に加算/減算で実現
                     // 例: さらに後進量を固定値で足す
-                    float backward_factor = -0.3f; // 固定で少し後ろへ
+                    float backward_factor = -1.0f; // 固定で少し後ろへ
                     calculate_servo_pulse(pid_output + backward_factor, &right_pulse, &left_pulse);
                     printf(">Backward:%d\n",0);
+                    gpio_put(PICO_DEFAULT_LED_PIN, 0);
                 } else {
                     // 通常どおりPIDのみ
                     calculate_servo_pulse(pid_output, &right_pulse, &left_pulse);
                     printf(">Backward:%d\n",1);
+                    gpio_put(PICO_DEFAULT_LED_PIN, 1);
                 }
                 break;
 
@@ -241,21 +241,23 @@ int main() {
                 if (distance_cm > 0 && distance_cm <= 10.0f) {
                     // 10cm以下 → 回転動作に入る
                     turning = true;
+                    gpio_put(PICO_DEFAULT_LED_PIN, 0);
                 } else if (distance_cm > 10.0f) {
                     // 10cm超えたら前進モードへ
                     turning = false;
+                    gpio_put(PICO_DEFAULT_LED_PIN, 1);
                 }
 
                 if (turning) {
                     // 左右どちらかに回転 (例: 左回転)
-                    float turn_factor = 0.3f;
+                    float turn_factor = 0.5f;
                     // PID出力に加算して左右差を大きくする or 
                     // 直接一方を前進/もう一方を後退させる etc.
                     // ここでは簡単にPID出力+turn_factorで実装
-                    calculate_servo_pulse(pid_output + turn_factor, &right_pulse, &left_pulse);
+                    calculate_servo_turn_pulse(pid_output + turn_factor, &right_pulse, &left_pulse);
                 } else {
                     // 前進 + PID
-                    float forward_factor = 0.3f;
+                    float forward_factor = 0.5f;
                     calculate_servo_pulse(pid_output + forward_factor, &right_pulse, &left_pulse);
                 }
                 break;
