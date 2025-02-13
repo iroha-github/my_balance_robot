@@ -250,14 +250,14 @@ int main() {
 
                 if (turning) {
                     // 左右どちらかに回転 (例: 左回転)
-                    float turn_factor = 0.5f;
+                    float turn_factor = 0.05f;
                     // PID出力に加算して左右差を大きくする or 
                     // 直接一方を前進/もう一方を後退させる etc.
                     // ここでは簡単にPID出力+turn_factorで実装
                     calculate_servo_turn_pulse(pid_output + turn_factor, &right_pulse, &left_pulse);
                 } else {
                     // 前進 + PID
-                    float forward_factor = 0.5f;
+                    float forward_factor = 0.25f;
                     calculate_servo_pulse(pid_output + forward_factor, &right_pulse, &left_pulse);
                 }
                 break;
